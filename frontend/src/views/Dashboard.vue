@@ -157,14 +157,14 @@ const eliminationChartData = computed(() => ({
   labels: trends.value.map(t => new Date(t.date).toLocaleDateString()),
   datasets: [
     {
-      label: 'Eliminations',
+      label: 'Eliminaciones',
       data: trends.value.map(t => t.eliminations),
       borderColor: '#1a1a1a',
       backgroundColor: 'rgba(26, 26, 26, 0.1)',
       tension: 0.4
     },
     {
-      label: 'Revenue',
+      label: 'Ingresos',
       data: trends.value.map(t => t.revenue),
       borderColor: '#b8860b',
       backgroundColor: 'rgba(184, 134, 11, 0.1)',
