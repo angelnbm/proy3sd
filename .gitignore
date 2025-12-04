@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+logs/
+dist/
+build/
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+*.swp
+*.swo
+coverage/
+.nyc_output/

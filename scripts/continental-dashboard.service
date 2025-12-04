@@ -1,0 +1,20 @@
+[Unit]
+Description=Continental Dashboard - Executive Portal
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/continental-dashboard
+Environment=NODE_ENV=production
+ExecStart=/root/.nvm/versions/node/v20.0.0/bin/node src/index.js
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/continental-dashboard.log
+StandardError=append:/var/log/continental-dashboard-error.log
+
+# Restart on failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

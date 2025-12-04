@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # Backend Dashboard
+  dashboard-backend:
+    build: .
+    container_name: continental-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      
+      # Kafka
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-lxc-501:9092,lxc-502:9092}
+      KAFKA_CLIENT_ID: continental-dashboard
+      KAFKA_GROUP_ID: dashboard-consumer-group
+      KAFKA_TOPIC: continental.events
+      
+      # MySQL Master
+      DB_MASTER_HOST: ${DB_MASTER_HOST:-lxc-302}
+      DB_MASTER_PORT: 3306
+      DB_MASTER_USER: ${DB_MASTER_USER}
+      DB_MASTER_PASSWORD: ${DB_MASTER_PASSWORD}
+      DB_MASTER_DATABASE: continental_db
+      
+      # MySQL Slave
+      DB_SLAVE_HOST: ${DB_SLAVE_HOST:-lxc-303}
+      DB_SLAVE_PORT: 3306
+      DB_SLAVE_USER: ${DB_SLAVE_USER}
+      DB_SLAVE_PASSWORD: ${DB_SLAVE_PASSWORD}
+      DB_SLAVE_DATABASE: continental_db
+      
+      # Kong Gateway
+      KONG_GATEWAY_URL: ${KONG_GATEWAY_URL:-http://lxc-400:8000}
+      CONTRACT_SERVICE_URL: ${KONG_GATEWAY_URL:-http://lxc-400:8000}/api/v1/contracts
+      
+      # Retry config
+      MAX_RETRIES: 5
+      RETRY_DELAY_MS: 3000
+      BACKOFF_MULTIPLIER: 2
+      
+      # WebSocket
+      SOCKET_IO_ENABLED: true
+      
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - continental-network
+    depends_on:
+      - mysql-master
+      - kafka
+
+  # MySQL Master (for local development)
+  mysql-master:
+    image: mysql:8.0
+    container_name: continental-mysql-master
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: continental_db
+      MYSQL_USER: ${DB_MASTER_USER:-continental_user}
+      MYSQL_PASSWORD: ${DB_MASTER_PASSWORD:-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-master-data:/var/lib/mysql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - continental-network
+
+  # Kafka (for local development)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - continental-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    networks:
+      - continental-network
+
+networks:
+  continental-network:
+    driver: bridge
+
+volumes:
+  mysql-master-data:
