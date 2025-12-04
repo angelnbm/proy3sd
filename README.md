@@ -2,6 +2,8 @@
 
 Dashboard Ejecutivo Continental - Cerebro orquestador del sistema distribuido.
 
+> 🌐 **¿Necesitas configurar IPs diferentes?** Ver **[DISTRIBUTED_IPS.md](DISTRIBUTED_IPS.md)** para quick start
+
 ## Arquitectura
 
 - **Backend**: Node.js 20 + Express 4.18
@@ -9,7 +11,7 @@ Dashboard Ejecutivo Continental - Cerebro orquestador del sistema distribuido.
 - **Base de Datos**: MySQL 8.0 (Master/Slave)
 - **Mensajería**: Apache Kafka
 - **Gateway**: Kong API Gateway
-- **Infraestructura**: LXC 301 (Proxmox)
+- **Infraestructura**: LXC 301 (Proxmox) - **100% distribuible**
 
 ## Responsabilidades
 
@@ -33,13 +35,39 @@ cd ..
 
 ## Configuración
 
-1. Copiar `.env.example` a `.env`
-2. Configurar las variables de entorno según tu infraestructura LXC
-3. Asegurar conectividad con:
-   - Kafka brokers (LXC 501, 502)
-   - MySQL Master (LXC 302)
-   - MySQL Slave (LXC 303)
-   - Kong Gateway (LXC 400)
+### Ambiente Distribuido (Producción)
+
+```bash
+# 1. Copiar configuración de producción
+cp .env.production .env
+
+# 2. Editar IPs según tu infraestructura
+nano .env
+
+# 3. Validar conectividad
+./scripts/test-connectivity.sh  # Linux/macOS
+.\scripts\test-connectivity.ps1  # Windows
+```
+
+**Ver [DISTRIBUTED_IPS.md](DISTRIBUTED_IPS.md) para guía completa de configuración con IPs diferentes.**
+
+### Ambiente Local (Desarrollo)
+
+```bash
+# 1. Copiar configuración de desarrollo
+cp .env.development .env
+
+# 2. Levantar servicios con Docker
+docker-compose up -d
+```
+
+### Variables Críticas
+
+Asegurar conectividad con:
+- **Kafka brokers**: `KAFKA_BROKERS=IP1:9092,IP2:9092`
+- **MySQL Master**: `DB_MASTER_HOST=IP_MASTER`
+- **MySQL Slave**: `DB_SLAVE_HOST=IP_SLAVE`
+- **Kong Gateway**: `KONG_GATEWAY_URL=http://IP_KONG:8000`
 
 ## Ejecución
 
@@ -108,3 +136,18 @@ Logs disponibles en:
 - `logs/continental-dashboard.log` - Logs de aplicación
 - `logs/kafka-consumer.log` - Logs de consumidor Kafka
 - `logs/errors.log` - Logs de errores
+
+## Documentación Adicional
+
+### 🚀 Setup y Deployment
+- **[INFRASTRUCTURE_MAP.md](INFRASTRUCTURE_MAP.md)** - 🗺️ **Mapeo de LXC a crear en Proxmox**
+- **[PROXMOX_LXC_SETUP.md](PROXMOX_LXC_SETUP.md)** - Guía completa de creación de contenedores
+- **[DISTRIBUTED_IPS.md](DISTRIBUTED_IPS.md)** - Quick start para configurar IPs diferentes
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Guía de instalación paso a paso
+
+### 📚 Arquitectura y Configuración
+- **[README_DISTRIBUTED.md](README_DISTRIBUTED.md)** - Guía completa de arquitectura distribuida
+- **[MULTI_ENV_SETUP.md](MULTI_ENV_SETUP.md)** - Configuración multi-ambiente
+- **[DISTRIBUTED_SETUP.md](DISTRIBUTED_SETUP.md)** - Setup detallado paso a paso
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Arquitectura técnica
+- **[API.md](API.md)** - Documentación de endpoints
